@@ -9,3 +9,10 @@ TMP=""
 die()  { printf 'ошибка: %s\n' "$1" >&2; exit 1; }
 
 warn() { printf 'внимание: %s\n' "$1" >&2; }
+
+cleanup() { [ -n "${TMP:-}" ] && rm -rf "$TMP"; }
+trap cleanup EXIT
+
+mktmp() { TMP="$(mktemp -d)"; }
+
+expand_tilde() { case "$1" in "~"|"~/"*) printf '%s' "$HOME${1#\~}" ;; *) printf '%s' "$1" ;; esac; }
