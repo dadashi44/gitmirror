@@ -6,3 +6,9 @@ email_regex() {
   printf '%s' "$1" | tr ',' '\n' | sed 's/^ *//; s/ *$//; /^$/d; s/[.[\*^$]/\\&/g' |
     paste -sd'|' - | sed "s/^/$TAB(/; s/\$/)\$/"
 }
+
+label_from_remote() {
+  local url; url="$(git -C "$1" remote get-url origin 2>/dev/null || true)"
+  [ -z "$url" ] && { basename "$1"; return; }
+  printf '%s' "$url" | sed -e 's#^[a-z+]*://##' -e 's#^[^@/]*@##' -e 's#:#/#' -e 's#\.git$##'
+}
