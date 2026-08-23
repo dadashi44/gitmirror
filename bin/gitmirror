@@ -4,21 +4,29 @@
 set -euo pipefail
 
 PROG="$(basename "$0")"
+ROOT="$(cd -P "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LIB="$ROOT/lib"
+
+. "$LIB/core.sh"
+. "$LIB/config.sh"
+. "$LIB/git.sh"
+for f in "$LIB"/commands/*.sh; do . "$f"; done
 
 usage() {
   cat <<USAGE
 $PROG — синхронизация активности приватных репозиториев в GitHub
 
 Команды:
-  init <каталог>   создать зеркало
-  add <путь>       добавить репозиторий-источник
-  sync             перенести новые коммиты в зеркало
+  init <каталог> --name <имя> --email <почта>   создать зеркало
+  add <путь>                                    добавить источник
+  sync                                          перенести новые коммиты
 USAGE
 }
 
 [ $# -eq 0 ] && { usage; exit 1; }
 cmd="$1"; shift
 case "$cmd" in
-  init|add|sync) echo "ещё не реализовано: $cmd"; exit 1 ;;
-  *) echo "неизвестная команда: $cmd" >&2; exit 1 ;;
+  init) cmd_init "$@" ;;
+  add|sync) echo "ещё не реализовано: $cmd"; exit 1 ;;
+  *) die "неизвестная команда: $cmd" ;;
 esac
