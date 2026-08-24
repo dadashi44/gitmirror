@@ -12,3 +12,7 @@ label_from_remote() {
   [ -z "$url" ] && { basename "$1"; return; }
   printf '%s' "$url" | sed -e 's#^[a-z+]*://##' -e 's#^[^@/]*@##' -e 's#:#/#' -e 's#\.git$##'
 }
+
+count_commits() {  # <путь> <почты>
+  git -C "$1" log --all --pretty="%H${TAB}%ae" 2>/dev/null | grep -icE "$(email_regex "$2")" || true
+}
