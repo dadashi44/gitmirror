@@ -12,3 +12,10 @@ resolve_mirror() {
 }
 
 cfg_get()     { sed -n "s/^$1=//p" "$MIRROR/$CONFIG_NAME" | head -1; }
+
+cfg_sources() { sed -n 's/^source=//p' "$MIRROR/$CONFIG_NAME"; }
+
+cfg_add_source() {  # <путь> <метка>
+  grep -qxF "source=$1|$2" "$MIRROR/$CONFIG_NAME" && return 1
+  printf 'source=%s|%s\n' "$1" "$2" >> "$MIRROR/$CONFIG_NAME"
+}
