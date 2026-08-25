@@ -13,3 +13,8 @@ cmd_status() {
   echo 'по годам:'
   git -C "$MIRROR" log --format='%ad' --date=format:%Y 2>/dev/null | sort | uniq -c | sed 's/^/  /'
 }
+
+cmd_sources() {
+  resolve_mirror
+  cfg_sources | while IFS='|' read -r p l; do printf '%-46s %s\n' "$l" "$p"; done
+}
