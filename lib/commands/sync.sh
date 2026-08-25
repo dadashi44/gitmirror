@@ -1,4 +1,4 @@
-# sync — перенести недостающие коммиты в зеркало.
+# sync — перенести недостающие коммиты в зеркало и запушить.
 
 cmd_sync() {
   local dry=0 fetch=1
@@ -10,7 +10,7 @@ cmd_sync() {
       *) die "лишний аргумент: $1" ;;
     esac
   done
-  resolve_mirror
+  [ -f "${MIRROR:-}/$CONFIG_NAME" ] || resolve_mirror
 
   local name emails re
   name="$(cfg_get name)"; emails="$(cfg_get emails)"
@@ -28,12 +28,7 @@ cmd_sync() {
     if [ "$fetch" = 1 ]; then
       git -C "$src" fetch --all --quiet --prune 2>/dev/null || warn "fetch не удался для $label"
     fi
-    git -C "$src" log --all --pretty="%H${TAB}%at${TAB}%ai${TAB}%ae" | grep -iE "$re" |
-    while IFS="$TAB" read -r sha ts iso _; do
-      key="$label@$(printf '%s' "$sha" | cut -c1-7)"
-      grep -qxF "$key" "$TMP/seen" && continue
-      printf '%s\t%s\t%s\t%s\n' "$ts" "${iso##* }" "${iso% *}" "$key"
-    done >> "$TMP/pending"
+    source_pending "$src" "$label" "$re" "$TMP/seen" >> "$TMP/pending"
   done < "$TMP/sources"
 
   if [ ! -s "$TMP/pending" ]; then echo 'новых коммитов нет'; return 0; fi
@@ -45,12 +40,12 @@ cmd_sync() {
 
   local added=0
   while IFS="$TAB" read -r ts tz human key; do
-    GIT_AUTHOR_DATE="$ts $tz" GIT_COMMITTER_DATE="$ts $tz" \
-    git -C "$MIRROR" -c user.name="$name" -c user.email="${emails%%,*}" \
-      commit -q --allow-empty -m "activity $human ($key)"
+    mirror_commit "$ts" "$tz" "$human" "$key" "$name" "${emails%%,*}"
     added=$((added+1))
   done < "$TMP/sorted"
   printf 'добавлено коммитов: %s\n' "$added"
+
+  return 0
 }
 
 sync_preview() {
