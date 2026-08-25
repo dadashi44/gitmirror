@@ -16,3 +16,7 @@ label_from_remote() {
 count_commits() {  # <путь> <почты>
   git -C "$1" log --all --pretty="%H${TAB}%ae" 2>/dev/null | grep -icE "$(email_regex "$2")" || true
 }
+
+mirror_seen_keys() {
+  git -C "$MIRROR" log --format='%s' 2>/dev/null | sed -n 's/.*(\(.*\))$/\1/p' | sort -u
+}
