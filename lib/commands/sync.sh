@@ -1,11 +1,15 @@
 # sync — перенести недостающие коммиты в зеркало и запушить.
 
 cmd_sync() {
-  local dry=0 fetch=1
+  local dry=0 fetch=1 since_ts=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --dry-run)  dry=1; shift ;;
       --no-fetch) fetch=0; shift ;;
+      --since)
+        since_ts="$(date -j -f '%Y-%m-%d' "$2" +%s 2>/dev/null || date -d "$2" +%s 2>/dev/null || true)"
+        [ -n "$since_ts" ] || die "не разобрал дату: $2"
+        shift 2 ;;
       -*) die "неизвестный флаг: $1" ;;
       *) die "лишний аргумент: $1" ;;
     esac
@@ -28,7 +32,7 @@ cmd_sync() {
     if [ "$fetch" = 1 ]; then
       git -C "$src" fetch --all --quiet --prune 2>/dev/null || warn "fetch не удался для $label"
     fi
-    source_pending "$src" "$label" "$re" "$TMP/seen" >> "$TMP/pending"
+    source_pending "$src" "$label" "$re" "$TMP/seen" "$since_ts" >> "$TMP/pending"
   done < "$TMP/sources"
 
   if [ ! -s "$TMP/pending" ]; then echo 'новых коммитов нет'; return 0; fi

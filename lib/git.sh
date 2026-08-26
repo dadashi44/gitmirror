@@ -22,10 +22,11 @@ mirror_seen_keys() {
 }
 
 # коммиты источника, ещё не попавшие в зеркало → ts, tz, дата, ключ
-source_pending() {  # <путь> <метка> <регулярка> <файл-seen>
-  local src="$1" label="$2" re="$3" seen="$4"
+source_pending() {  # <путь> <метка> <регулярка> <файл-seen> [since_ts]
+  local src="$1" label="$2" re="$3" seen="$4" since="${5:-}"
   git -C "$src" log --all --pretty="%H${TAB}%at${TAB}%ai${TAB}%ae" | grep -iE "$re" |
   while IFS="$TAB" read -r sha ts iso _; do
+    if [ -n "$since" ] && [ "$ts" -lt "$since" ]; then continue; fi
     key="$label@$(printf '%s' "$sha" | cut -c1-7)"
     grep -qxF "$key" "$seen" && continue
     printf '%s\t%s\t%s\t%s\n' "$ts" "${iso##* }" "${iso% *}" "$key"
