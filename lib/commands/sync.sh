@@ -1,10 +1,11 @@
 # sync — перенести недостающие коммиты в зеркало и запушить.
 
 cmd_sync() {
-  local dry=0 fetch=1 since_ts=""
+  local dry=0 push=1 fetch=1 since_ts=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --dry-run)  dry=1; shift ;;
+      --no-push)  push=0; shift ;;
       --no-fetch) fetch=0; shift ;;
       --since)
         since_ts="$(date -j -f '%Y-%m-%d' "$2" +%s 2>/dev/null || date -d "$2" +%s 2>/dev/null || true)"
@@ -49,6 +50,7 @@ cmd_sync() {
   done < "$TMP/sorted"
   printf 'добавлено коммитов: %s\n' "$added"
 
+  [ "$push" = 1 ] && sync_push
   return 0
 }
 
@@ -57,4 +59,10 @@ sync_preview() {
   cut -f3,4 "$TMP/sorted" | head -20 | sed 's/^/  /'
   [ "$(wc -l < "$TMP/sorted")" -gt 20 ] && echo '  ...'
   return 0
+}
+
+sync_push() {
+  git -C "$MIRROR" remote get-url origin >/dev/null 2>&1 || return 0
+  if git -C "$MIRROR" push --quiet origin HEAD; then echo 'запушено'
+  else warn 'пуш не прошёл — проверь доступ к remote'; fi
 }
