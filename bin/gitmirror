@@ -1,32 +1,40 @@
 #!/usr/bin/env bash
-# gitmirror — переносит активность из приватных репозиториев в репозиторий-зеркало
-# на GitHub в виде пустых коммитов. Точка входа.
+# gitmirror — переносит активность из приватных репозиториев в
+# репозиторий-зеркало на GitHub в виде пустых коммитов: без кода, без
+# оригинальных сообщений. Точка входа: разбор аргументов и маршрутизация.
 set -euo pipefail
 
 PROG="$(basename "$0")"
-ROOT="$(cd -P "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# корень проекта, с учётом запуска через симлинк
+src="${BASH_SOURCE[0]}"
+while [ -L "$src" ]; do
+  dir="$(cd -P "$(dirname "$src")" && pwd)"
+  src="$(readlink "$src")"
+  case "$src" in /*) ;; *) src="$dir/$src" ;; esac
+done
+ROOT="$(cd -P "$(dirname "$src")/.." && pwd)"
 LIB="$ROOT/lib"
 
 . "$LIB/core.sh"
+. "$LIB/ui.sh"
 . "$LIB/config.sh"
 . "$LIB/git.sh"
 for f in "$LIB"/commands/*.sh; do . "$f"; done
 
-usage() {
-  cat <<USAGE
-$PROG — синхронизация активности приватных репозиториев в GitHub
-
-Команды:
-  init <каталог> --name <имя> --email <почта>   создать зеркало
-  add <путь>                                    добавить источник
-  sync                                          перенести новые коммиты
-USAGE
-}
-
+args=(); while [ $# -gt 0 ]; do
+  case "$1" in
+    --mirror) MIRROR="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    --version) echo "$PROG $VERSION"; exit 0 ;;
+    *) args+=("$1"); shift ;;
+  esac
+done
+set -- ${args[@]+"${args[@]}"}
 [ $# -eq 0 ] && { usage; exit 1; }
+
 cmd="$1"; shift
 case "$cmd" in
-  init) cmd_init "$@" ;;
-  add|sync) echo "ещё не реализовано: $cmd"; exit 1 ;;
-  *) die "неизвестная команда: $cmd" ;;
+  setup|init|add|sync|status|sources) "cmd_$cmd" "$@" ;;
+  *) die "неизвестная команда: $cmd (см. $PROG --help)" ;;
 esac
