@@ -10,7 +10,9 @@ cmd_init() {
       *) dir="$1"; shift ;;
     esac
   done
-  [ -n "$dir" ] || die "не указан каталог зеркала"
+  [ -n "$dir" ]    || ask dir    'Каталог для зеркала' "$HOME/activity-mirror"
+  [ -n "$name" ]   || ask name   'Имя автора для коммитов' "$(git config --global user.name || true)"
+  [ -n "$emails" ] || ask emails 'Почта (несколько — через запятую)' "$(git config --global user.email || true)"
   dir="$(expand_tilde "$dir")"
   [ -n "$name" ]   || die "имя не задано"
   [ -n "$emails" ] || die "почта не задана"

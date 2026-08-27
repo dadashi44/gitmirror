@@ -9,7 +9,7 @@ cmd_add() {
     esac
   done
   resolve_mirror
-  [ -n "$src" ] || die "не указан путь к репозиторию"
+  [ -n "$src" ] || ask src 'Путь к репозиторию-источнику'
   src="$(expand_tilde "$src")"
   [ -d "$src/.git" ] || die "$src не git-репозиторий"
   src="$(cd "$src" && pwd)"
