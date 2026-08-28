@@ -56,7 +56,7 @@ cmd_sync() {
 
 sync_preview() {
   printf 'будет добавлено: %s\n' "$(wc -l < "$TMP/sorted" | tr -d ' ')"
-  cut -f3,4 "$TMP/sorted" | head -20 | sed 's/^/  /'
+  head -20 "$TMP/sorted" | cut -f3,4 | sed 's/^/  /'
   [ "$(wc -l < "$TMP/sorted")" -gt 20 ] && echo '  ...'
   return 0
 }
