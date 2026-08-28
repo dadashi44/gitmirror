@@ -80,3 +80,55 @@ gitmirror sync
 - Репозиторий не должен быть форком.
 - Для приватного зеркала — включить Settings → Public profile →
   **Include private contributions on my profile**.
+
+## Автозапуск (macOS, launchd)
+
+`~/Library/LaunchAgents/com.user.activity-mirror.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.user.activity-mirror</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/gitmirror</string>
+    <string>sync</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>21</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardOutPath</key><string>/tmp/activity-mirror.log</string>
+  <key>StandardErrorPath</key><string>/tmp/activity-mirror.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>GITMIRROR_DIR</key><string>/Users/ВАШ_ЮЗЕР/activity-mirror</string>
+    <key>PATH</key><string>/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin</string>
+    <key>GIT_TERMINAL_PROMPT</key><string>0</string>
+  </dict>
+</dict>
+</plist>
+```
+
+```sh
+launchctl load ~/Library/LaunchAgents/com.user.activity-mirror.plist
+```
+
+Для автопуша без запросов пароля используйте SSH-remote: при HTTPS токен
+в keychain протухнет, и задача начнёт молча падать.
+
+Cron-аналог для Linux:
+
+```
+0 21 * * * GITMIRROR_DIR=$HOME/activity-mirror /usr/local/bin/gitmirror sync >> /tmp/activity-mirror.log 2>&1
+```
+
+## Ограничения
+
+- Merge request / pull request как сущности не переносятся — в git от них
+  остаётся только merge-коммит, он и попадает в зеркало. Ревью чужого кода
+  отразить нечем.
+- Скрипт читает **локальные клоны** и делает в них `fetch`, так что источники
+  должны быть склонированы на машину.
+- Активность без содержимого: график заполнится, но как портфолио зеркало
+  не работает. Держите его приватным.
