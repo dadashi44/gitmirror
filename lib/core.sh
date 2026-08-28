@@ -1,6 +1,6 @@
 # core.sh — базовые примитивы: вывод, ошибки, временный каталог.
 
-VERSION=0.1.0
+VERSION=1.0.0
 PROG="${PROG:-gitmirror}"
 CONFIG_NAME=.gitmirror
 TAB="$(printf '\t')"
