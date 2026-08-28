@@ -7,10 +7,9 @@ TAB="$(printf '\t')"
 TMP=""
 
 die()  { printf 'ошибка: %s\n' "$1" >&2; exit 1; }
-
 warn() { printf 'внимание: %s\n' "$1" >&2; }
 
-cleanup() { [ -n "${TMP:-}" ] && rm -rf "$TMP"; }
+cleanup() { [ -n "${TMP:-}" ] && rm -rf "$TMP"; return 0; }
 trap cleanup EXIT
 
 mktmp() { TMP="$(mktemp -d)"; }
