@@ -6,8 +6,9 @@ CONFIG_NAME=.gitmirror
 TAB="$(printf '\t')"
 TMP=""
 
-die()  { printf 'ошибка: %s\n' "$1" >&2; exit 1; }
-warn() { printf 'внимание: %s\n' "$1" >&2; }
+# цвета E_* и step_break — из style.sh, он грузится следом
+die()  { step_break; printf '%s✗ ошибка:%s %s\n' "${E_RED:-}" "${E_RST:-}" "$1" >&2; exit 1; }
+warn() { step_break; printf '%s! внимание:%s %s\n' "${E_YEL:-}" "${E_RST:-}" "$1" >&2; }
 
 cleanup() { [ -n "${TMP:-}" ] && rm -rf "$TMP"; return 0; }
 trap cleanup EXIT

@@ -17,6 +17,7 @@ ROOT="$(cd -P "$(dirname "$src")/.." && pwd)"
 LIB="$ROOT/lib"
 
 . "$LIB/core.sh"
+. "$LIB/style.sh"
 . "$LIB/ui.sh"
 . "$LIB/config.sh"
 . "$LIB/git.sh"

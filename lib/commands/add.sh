@@ -14,7 +14,10 @@ cmd_add() {
   [ -d "$src/.git" ] || die "$src не git-репозиторий"
   src="$(cd "$src" && pwd)"
   [ -n "$label" ] || label="$(label_from_remote "$src")"
-  cfg_add_source "$src" "$label" || { echo "уже добавлен: $label"; return; }
-  printf 'источник добавлен: %s\n  путь: %s\n  твоих коммитов: %s\n' \
-    "$label" "$src" "$(count_commits "$src" "$(cfg_get emails)")"
+  cfg_add_source "$src" "$label" || { step_warn 'уже добавлен' "$label"; return 0; }
+  step_run 'источник добавлен' 'считаю коммиты…'
+  local n; n="$(count_commits "$src" "$(cfg_get emails)")"
+  step_ok 'источник добавлен' "$label"
+  kv 'путь'     "$(tildify "$src")"
+  kv 'коммитов' "$(num "${n:-0}")"
 }

@@ -35,5 +35,5 @@ README
   git -C "$dir" -c user.name="$name" -c user.email="${emails%%,*}" \
     commit -q -m "Инициализация зеркала активности"
   MIRROR="$dir"
-  printf 'зеркало создано: %s\n' "$dir"
+  step_ok 'зеркало создано' "$(tildify "$dir")"
 }
