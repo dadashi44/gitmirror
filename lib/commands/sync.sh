@@ -105,7 +105,7 @@ sync_push() {
   branch="$(git -C "$MIRROR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo HEAD)"
   title="пуш в origin/$branch"
 
-  local tries="${GITMIRROR_PUSH_RETRIES:-4}" delay=5 n=1 err s
+  local tries="${GITMIRROR_PUSH_RETRIES:-4}" delay="${GITMIRROR_PUSH_DELAY:-5}" n=1 err s
   while :; do
     step_run "$title" "попытка $n/$tries"
     if err=$(git -C "$MIRROR" push --quiet origin HEAD 2>&1); then
